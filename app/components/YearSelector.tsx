@@ -15,9 +15,9 @@ export default function YearSelector({
 
   function onChange(value: string) {
     const params = new URLSearchParams()
-    params.set('tab', 'overview')
     if (value) params.set('연도', value)
-    startTransition(() => router.push(`/?${params.toString()}`))
+    const query = params.toString()
+    startTransition(() => router.push(query ? `/?${query}` : '/'))
   }
 
   return (
