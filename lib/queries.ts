@@ -89,6 +89,32 @@ export async function getSummaryStats(filters: Filters = {}) {
   return result.rows[0]
 }
 
+export async function getYearlyTrend() {
+  const result = await pool.query<{
+    연도: number
+    총매출: string
+    총이익금액: string
+    평균이익율: string
+    건수: string
+  }>(
+    `SELECT 연도,
+            SUM(실매출금액) as 총매출,
+            SUM(실이익금액) as 총이익금액,
+            ROUND(AVG(실이익율)::numeric, 2) as 평균이익율,
+            COUNT(*) as 건수
+     FROM sales_records
+     GROUP BY 연도
+     ORDER BY 연도`
+  )
+  return result.rows.map((r) => ({
+    연도: r.연도,
+    총매출: parseFloat(r.총매출),
+    총이익금액: parseFloat(r.총이익금액),
+    평균이익율: parseFloat(r.평균이익율),
+    건수: parseInt(r.건수),
+  }))
+}
+
 export async function getDistinct매출처() {
   const result = await pool.query(
     `SELECT DISTINCT 매출처 FROM sales_records WHERE 매출처 != '' ORDER BY 매출처`
