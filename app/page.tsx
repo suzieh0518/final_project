@@ -3,15 +3,18 @@ import {
   getSalesRecords,
   getSummaryStats,
   getDistinct매출처,
+  getDistinct연도,
   getOverviewData,
 } from '@/lib/queries'
 import TabNav from './components/TabNav'
 import StatsCards from './components/StatsCards'
 import Filters from './components/Filters'
 import DataTable from './components/DataTable'
+import DataUpload from './components/DataUpload'
 import Pagination from './components/Pagination'
 import CustomerProfitChart from './components/overview/CustomerProfitChart'
 import ManufacturerProfitChart from './components/overview/ManufacturerProfitChart'
+import InsuranceCodeChart from './components/overview/InsuranceCodeChart'
 import TopProductsSection from './components/overview/TopProductsSection'
 
 export default async function Page({
@@ -25,7 +28,7 @@ export default async function Page({
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-        <h1 className="text-lg font-bold text-gray-900">매출 대시보드 2025</h1>
+        <h1 className="text-lg font-bold text-gray-900">매출 대시보드</h1>
         <TabNav currentTab={tab} />
       </header>
 
@@ -49,6 +52,7 @@ async function OverviewContent() {
         <CustomerProfitChart data={data.customerProfit} />
         <ManufacturerProfitChart data={data.manufacturerProfit} />
       </div>
+      <InsuranceCodeChart data={data.insuranceCodeTop10} />
       <TopProductsSection
         byVolume={data.topByVolume}
         byProfitRate={data.topByProfitRate}
@@ -66,23 +70,26 @@ async function DataContent({
     search: params.search,
     매입처: params.매입처,
     매출처: params.매출처,
+    연도: params.연도 ? parseInt(params.연도) : undefined,
     page: params.page ? parseInt(params.page) : 1,
   }
 
-  const [{ records, total, totalPages, currentPage }, stats, 매출처List] =
+  const [{ records, total, totalPages, currentPage }, stats, 매출처List, 연도List] =
     await Promise.all([
       getSalesRecords(filters),
       getSummaryStats(filters),
       getDistinct매출처(),
+      getDistinct연도(),
     ])
 
   return (
     <>
+      <DataUpload />
       <StatsCards stats={stats} />
       <div className="bg-white rounded-xl border border-gray-200">
         <div className="px-5 py-4 border-b border-gray-100">
           <Suspense>
-            <Filters 매출처List={매출처List} />
+            <Filters 매출처List={매출처List} 연도List={연도List} />
           </Suspense>
         </div>
         <DataTable records={records} />

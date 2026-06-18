@@ -7,11 +7,12 @@ type Filters = {
   search?: string
   매입처?: string
   매출처?: string
+  연도?: number
   page?: number
 }
 
 function buildWhere(filters: Filters) {
-  const { search, 매입처, 매출처 } = filters
+  const { search, 매입처, 매출처, 연도 } = filters
   const conditions: string[] = []
   const values: unknown[] = []
   let idx = 1
@@ -29,6 +30,11 @@ function buildWhere(filters: Filters) {
   if (매출처) {
     conditions.push(`매출처 = $${idx}`)
     values.push(매출처)
+    idx++
+  }
+  if (연도) {
+    conditions.push(`연도 = $${idx}`)
+    values.push(연도)
     idx++
   }
 
@@ -84,8 +90,15 @@ export async function getDistinct매출처() {
   return result.rows.map((r: { 매출처: string }) => r.매출처)
 }
 
+export async function getDistinct연도() {
+  const result = await pool.query(
+    `SELECT DISTINCT 연도 FROM sales_records ORDER BY 연도 DESC`
+  )
+  return result.rows.map((r: { 연도: number }) => r.연도)
+}
+
 export async function getOverviewData() {
-  const [customerRows, manufacturerRows, volumeRows, rateRows, statsRows] = await Promise.all([
+  const [customerRows, manufacturerRows, volumeRows, rateRows, statsRows, insuranceRows] = await Promise.all([
     pool.query<{ 매출처: string; 이익합계: string }>(
       `SELECT 매출처, SUM(실이익금액) as 이익합계
        FROM sales_records WHERE 매출처 != ''
@@ -119,6 +132,16 @@ export async function getOverviewData() {
               COALESCE(AVG(실이익율), 0) as avg_profit_rate
        FROM sales_records`
     ),
+    pool.query<{ 보험코드: string; 총매출: string; 총이익금액: string; 평균이익율: string; 건수: string }>(
+      `SELECT 보험코드,
+              SUM(기준가) as 총매출,
+              SUM(실이익금액) as 총이익금액,
+              ROUND(AVG(실이익율)::numeric, 2) as 평균이익율,
+              COUNT(*) as 건수
+       FROM sales_records WHERE 보험코드 IS NOT NULL AND 보험코드 != ''
+       GROUP BY 보험코드
+       ORDER BY 총매출 DESC LIMIT 10`
+    ),
   ])
 
   return {
@@ -139,5 +162,12 @@ export async function getOverviewData() {
       총기준가: parseFloat(r.총기준가),
     })),
     globalStats: statsRows.rows[0],
+    insuranceCodeTop10: insuranceRows.rows.map((r) => ({
+      보험코드: r.보험코드,
+      총매출: parseFloat(r.총매출),
+      총이익금액: parseFloat(r.총이익금액),
+      평균이익율: parseFloat(r.평균이익율),
+      건수: parseInt(r.건수),
+    })),
   }
 }

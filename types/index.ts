@@ -9,5 +9,6 @@ export type SalesRecord = {
   실매입단가: number
   실이익금액: number
   실이익율: number
+  연도: number
   created_at: string
 }

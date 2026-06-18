@@ -3,7 +3,13 @@
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
 
-export default function Filters({ 매출처List }: { 매출처List: string[] }) {
+export default function Filters({
+  매출처List,
+  연도List,
+}: {
+  매출처List: string[]
+  연도List: number[]
+}) {
   const searchParams = useSearchParams()
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -48,6 +54,16 @@ export default function Filters({ 매출처List }: { 매출처List: string[] }) 
         onKeyDown={(e) => e.key === 'Enter' && apply({ 매입처: 매입처Input })}
         className="border border-gray-300 rounded-lg px-3 py-2 text-sm w-44 focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
+      <select
+        value={searchParams.get('연도') ?? ''}
+        onChange={(e) => apply({ 연도: e.target.value })}
+        className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+      >
+        <option value="">전체 연도</option>
+        {연도List.map((y) => (
+          <option key={y} value={String(y)}>{y}년</option>
+        ))}
+      </select>
       <select
         value={searchParams.get('매출처') ?? ''}
         onChange={(e) => apply({ 매출처: e.target.value })}
