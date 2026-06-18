@@ -153,7 +153,7 @@ export async function getOverviewData(연도?: number) {
     ),
     pool.query<{ 보험코드: string; 총매출: string; 총이익금액: string; 평균이익율: string; 건수: string }>(
       `SELECT 보험코드,
-              SUM(기준가) as 총매출,
+              SUM(실매출금액) as 총매출,
               SUM(실이익금액) as 총이익금액,
               ROUND(AVG(실이익율)::numeric, 2) as 평균이익율,
               COUNT(*) as 건수
