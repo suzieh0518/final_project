@@ -83,3 +83,61 @@ export async function getDistinct매출처() {
   )
   return result.rows.map((r: { 매출처: string }) => r.매출처)
 }
+
+export async function getOverviewData() {
+  const [customerRows, manufacturerRows, volumeRows, rateRows, statsRows] = await Promise.all([
+    pool.query<{ 매출처: string; 이익합계: string }>(
+      `SELECT 매출처, SUM(실이익금액) as 이익합계
+       FROM sales_records WHERE 매출처 != ''
+       GROUP BY 매출처 ORDER BY 이익합계 DESC LIMIT 8`
+    ),
+    pool.query<{ 제조사: string; 이익합계: string }>(
+      `SELECT 제조사, SUM(실이익금액) as 이익합계
+       FROM sales_records WHERE 제조사 != ''
+       GROUP BY 제조사 ORDER BY 이익합계 DESC LIMIT 10`
+    ),
+    pool.query<{ 제품명: string; 보험코드: string; 건수: string; 총기준가: string; 평균이익율: string }>(
+      `SELECT 제품명, 보험코드, COUNT(*) as 건수,
+              SUM(기준가) as 총기준가,
+              ROUND(AVG(실이익율)::numeric, 2) as 평균이익율
+       FROM sales_records WHERE 보험코드 IS NOT NULL AND 보험코드 != ''
+       GROUP BY 제품명, 보험코드
+       ORDER BY 총기준가 DESC LIMIT 10`
+    ),
+    pool.query<{ 제품명: string; 보험코드: string; 건수: string; 평균이익율: string; 총기준가: string }>(
+      `SELECT 제품명, 보험코드, COUNT(*) as 건수,
+              ROUND(AVG(실이익율)::numeric, 2) as 평균이익율,
+              SUM(기준가) as 총기준가
+       FROM sales_records WHERE 보험코드 IS NOT NULL AND 보험코드 != ''
+       GROUP BY 제품명, 보험코드
+       HAVING COUNT(*) >= 10
+       ORDER BY 평균이익율 DESC LIMIT 10`
+    ),
+    pool.query<{ total_count: string; total_profit: string; avg_profit_rate: string }>(
+      `SELECT COUNT(*) as total_count,
+              COALESCE(SUM(실이익금액), 0) as total_profit,
+              COALESCE(AVG(실이익율), 0) as avg_profit_rate
+       FROM sales_records`
+    ),
+  ])
+
+  return {
+    customerProfit: customerRows.rows.map((r) => ({ 매출처: r.매출처, 이익합계: parseFloat(r.이익합계) })),
+    manufacturerProfit: manufacturerRows.rows.map((r) => ({ 제조사: r.제조사, 이익합계: parseFloat(r.이익합계) })),
+    topByVolume: volumeRows.rows.map((r) => ({
+      제품명: r.제품명,
+      보험코드: r.보험코드,
+      건수: parseInt(r.건수),
+      총기준가: parseFloat(r.총기준가),
+      평균이익율: parseFloat(r.평균이익율),
+    })),
+    topByProfitRate: rateRows.rows.map((r) => ({
+      제품명: r.제품명,
+      보험코드: r.보험코드,
+      건수: parseInt(r.건수),
+      평균이익율: parseFloat(r.평균이익율),
+      총기준가: parseFloat(r.총기준가),
+    })),
+    globalStats: statsRows.rows[0],
+  }
+}

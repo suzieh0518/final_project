@@ -4,6 +4,15 @@ function fmt(n: number) {
   return Number(n).toLocaleString('ko-KR')
 }
 
+function ProfitBadge({ rate }: { rate: number }) {
+  let cls = 'px-2 py-0.5 rounded-full text-xs font-medium '
+  if (rate < 0) cls += 'bg-red-50 text-red-600'
+  else if (rate < 5) cls += 'bg-gray-100 text-gray-600'
+  else if (rate < 10) cls += 'bg-blue-50 text-blue-600'
+  else cls += 'bg-green-50 text-green-600'
+  return <span className={cls}>{rate.toFixed(2)}%</span>
+}
+
 const COLUMNS = ['매입처', '제조사', '매출처', '제품명', '보험코드', '기준가', '실매입단가', '실이익금액', '실이익율'] as const
 
 export default function DataTable({ records }: { records: SalesRecord[] }) {
@@ -37,7 +46,13 @@ export default function DataTable({ records }: { records: SalesRecord[] }) {
               <td className="px-4 py-3 text-gray-700 whitespace-nowrap">{r.제조사}</td>
               <td className="px-4 py-3 text-gray-700 whitespace-nowrap">{r.매출처}</td>
               <td className="px-4 py-3 text-gray-700 max-w-xs truncate" title={r.제품명}>{r.제품명}</td>
-              <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{r.보험코드}</td>
+              <td className="px-4 py-3 whitespace-nowrap">
+                {r.보험코드 && (
+                  <span className="px-1.5 py-0.5 bg-blue-50 text-blue-700 text-xs font-mono rounded border border-blue-100">
+                    {r.보험코드}
+                  </span>
+                )}
+              </td>
               <td className="px-4 py-3 text-gray-700 text-right whitespace-nowrap">{fmt(r.기준가)}</td>
               <td className="px-4 py-3 text-gray-700 text-right whitespace-nowrap">{fmt(r.실매입단가)}</td>
               <td className="px-4 py-3 text-right whitespace-nowrap font-medium">
@@ -45,10 +60,8 @@ export default function DataTable({ records }: { records: SalesRecord[] }) {
                   {fmt(r.실이익금액)}
                 </span>
               </td>
-              <td className="px-4 py-3 text-right whitespace-nowrap font-medium">
-                <span className={Number(r.실이익율) >= 0 ? 'text-blue-600' : 'text-red-500'}>
-                  {Number(r.실이익율).toFixed(2)}%
-                </span>
+              <td className="px-4 py-3 text-right whitespace-nowrap">
+                <ProfitBadge rate={Number(r.실이익율)} />
               </td>
             </tr>
           ))}

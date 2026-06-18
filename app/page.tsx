@@ -1,9 +1,18 @@
 import { Suspense } from 'react'
-import { getSalesRecords, getSummaryStats, getDistinct매출처 } from '@/lib/queries'
+import {
+  getSalesRecords,
+  getSummaryStats,
+  getDistinct매출처,
+  getOverviewData,
+} from '@/lib/queries'
+import TabNav from './components/TabNav'
 import StatsCards from './components/StatsCards'
 import Filters from './components/Filters'
 import DataTable from './components/DataTable'
 import Pagination from './components/Pagination'
+import CustomerProfitChart from './components/overview/CustomerProfitChart'
+import ManufacturerProfitChart from './components/overview/ManufacturerProfitChart'
+import TopProductsSection from './components/overview/TopProductsSection'
 
 export default async function Page({
   searchParams,
@@ -11,6 +20,48 @@ export default async function Page({
   searchParams: Promise<{ [key: string]: string | undefined }>
 }) {
   const params = await searchParams
+  const tab = params.tab ?? 'overview'
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+        <h1 className="text-lg font-bold text-gray-900">매출 대시보드 2025</h1>
+        <TabNav currentTab={tab} />
+      </header>
+
+      <main className="max-w-screen-xl mx-auto px-6 py-6 space-y-5">
+        {tab === 'overview' ? (
+          <OverviewContent />
+        ) : (
+          <DataContent params={params} />
+        )}
+      </main>
+    </div>
+  )
+}
+
+async function OverviewContent() {
+  const data = await getOverviewData()
+  return (
+    <>
+      <StatsCards stats={data.globalStats} />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <CustomerProfitChart data={data.customerProfit} />
+        <ManufacturerProfitChart data={data.manufacturerProfit} />
+      </div>
+      <TopProductsSection
+        byVolume={data.topByVolume}
+        byProfitRate={data.topByProfitRate}
+      />
+    </>
+  )
+}
+
+async function DataContent({
+  params,
+}: {
+  params: { [key: string]: string | undefined }
+}) {
   const filters = {
     search: params.search,
     매입처: params.매입처,
@@ -18,40 +69,36 @@ export default async function Page({
     page: params.page ? parseInt(params.page) : 1,
   }
 
-  const [{ records, total, totalPages, currentPage }, stats, 매출처List] = await Promise.all([
-    getSalesRecords(filters),
-    getSummaryStats(filters),
-    getDistinct매출처(),
-  ])
+  const [{ records, total, totalPages, currentPage }, stats, 매출처List] =
+    await Promise.all([
+      getSalesRecords(filters),
+      getSummaryStats(filters),
+      getDistinct매출처(),
+    ])
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200 px-6 py-4">
-        <h1 className="text-lg font-bold text-gray-900">매출 대시보드 2025</h1>
-      </header>
-
-      <main className="max-w-screen-xl mx-auto px-6 py-6 space-y-5">
-        <StatsCards stats={stats} />
-
-        <div className="bg-white rounded-xl border border-gray-200">
-          <div className="px-5 py-4 border-b border-gray-100">
-            <Suspense>
-              <Filters 매출처List={매출처List} />
-            </Suspense>
-          </div>
-
-          <DataTable records={records} />
-
-          <div className="px-5 py-4 border-t border-gray-100 flex items-center justify-between">
-            <p className="text-sm text-gray-500">
-              총 <span className="font-medium text-gray-900">{total.toLocaleString('ko-KR')}</span>건
-            </p>
-            <Suspense>
-              <Pagination totalPages={totalPages} currentPage={currentPage} />
-            </Suspense>
-          </div>
+    <>
+      <StatsCards stats={stats} />
+      <div className="bg-white rounded-xl border border-gray-200">
+        <div className="px-5 py-4 border-b border-gray-100">
+          <Suspense>
+            <Filters 매출처List={매출처List} />
+          </Suspense>
         </div>
-      </main>
-    </div>
+        <DataTable records={records} />
+        <div className="px-5 py-4 border-t border-gray-100 flex items-center justify-between">
+          <p className="text-sm text-gray-500">
+            총{' '}
+            <span className="font-medium text-gray-900">
+              {total.toLocaleString('ko-KR')}
+            </span>
+            건
+          </p>
+          <Suspense>
+            <Pagination totalPages={totalPages} currentPage={currentPage} />
+          </Suspense>
+        </div>
+      </div>
+    </>
   )
 }
