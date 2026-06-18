@@ -11,15 +11,3 @@ export type SalesRecord = {
   실이익율: number
   created_at: string
 }
-
-export type Database = {
-  public: {
-    Tables: {
-      sales_records: {
-        Row: SalesRecord
-        Insert: Omit<SalesRecord, 'id' | 'created_at'>
-        Update: Partial<Omit<SalesRecord, 'id' | 'created_at'>>
-      }
-    }
-  }
-}

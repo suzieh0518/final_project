@@ -15,16 +15,15 @@ npm run lint     # ESLint 검사
 
 ## Architecture
 
-의료기기 매출 데이터(2025 복사본.xlsx)를 보여주는 대시보드. Next.js App Router + Supabase + Railway 스택.
+의료기기 매출 데이터(2025 복사본.xlsx)를 보여주는 대시보드. Next.js App Router + Railway PostgreSQL 스택.
 
-**Supabase 클라이언트 두 가지:**
-- `lib/supabase/client.ts` — 브라우저 전용 (`'use client'` 컴포넌트에서 사용)
-- `lib/supabase/server.ts` — Server Component / Route Handler / Server Function에서 사용. `cookies()`가 async이므로 `await createClient()`로 호출
+**DB 클라이언트:**
+- `lib/db.ts` — `pg` Pool 싱글톤. Server Component / Route Handler / Server Function에서만 사용 (서버 전용)
 
 **타입:**
-- `types/index.ts` — `SalesRecord` (DB row 형태), `Database` (Supabase 제네릭용)
+- `types/index.ts` — `SalesRecord` (DB row 형태)
 
-**DB 스키마:** `supabase/schema.sql` — `sales_records` 테이블. 컬럼: 매입처, 제조사, 매출처, 제품명, 보험코드, 기준가, 실매입단가, 실이익금액, 실이익율.
+**DB 스키마:** `db/schema.sql` — `sales_records` 테이블. 컬럼: 매입처, 제조사, 매출처, 제품명, 보험코드, 기준가, 실매입단가, 실이익금액, 실이익율.
 
 ## Next.js 16 주요 변경사항
 
@@ -35,8 +34,8 @@ npm run lint     # ESLint 검사
 
 ## 환경변수
 
-`.env.local`에 두 값이 필요 (`.env.example` 참고):
+`.env.local`에 필요:
 ```
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
+DATABASE_URL=postgresql://user:password@host:port/database
 ```
+Railway PostgreSQL 서비스의 Variables 탭에서 `DATABASE_URL` 복사.
