@@ -108,7 +108,7 @@ export async function getOverviewData(연도?: number) {
   const y = (hasWhere: boolean) =>
     연도 ? (hasWhere ? ` AND 연도 = $1` : ` WHERE 연도 = $1`) : ''
 
-  const [customerRows, manufacturerRows, volumeRows, rateRows, statsRows, profitRows, insuranceRows] = await Promise.all([
+  const [customerRows, manufacturerRows, volumeRows, rateRows, statsRows, profitRows, insuranceRows, pieSalesRows, pieRateRows] = await Promise.all([
     pool.query<{ 매출처: string; 이익합계: string }>(
       `SELECT 매출처, SUM(실이익금액) as 이익합계
        FROM sales_records WHERE 매출처 != ''${y(true)}
@@ -168,6 +168,20 @@ export async function getOverviewData(연도?: number) {
        ORDER BY 총매출 DESC LIMIT 10`,
       p
     ),
+    pool.query<{ 알파벳: string; 총매출: string }>(
+      `SELECT LEFT(보험코드, 1) as 알파벳, SUM(실매출금액) as 총매출
+       FROM sales_records WHERE 보험코드 IS NOT NULL AND 보험코드 != ''${y(true)}
+       GROUP BY LEFT(보험코드, 1)
+       ORDER BY 총매출 DESC`,
+      p
+    ),
+    pool.query<{ 알파벳: string; 총이익금액: string; 건수: string }>(
+      `SELECT LEFT(보험코드, 1) as 알파벳, SUM(실이익금액) as 총이익금액, COUNT(*) as 건수
+       FROM sales_records WHERE 보험코드 IS NOT NULL AND 보험코드 != ''${y(true)}
+       GROUP BY LEFT(보험코드, 1)
+       ORDER BY 총이익금액 DESC`,
+      p
+    ),
   ])
 
   return {
@@ -200,6 +214,15 @@ export async function getOverviewData(연도?: number) {
       총매출: parseFloat(r.총매출),
       총이익금액: parseFloat(r.총이익금액),
       평균이익율: parseFloat(r.평균이익율),
+      건수: parseInt(r.건수),
+    })),
+    pieSalesByCode: pieSalesRows.rows.map((r) => ({
+      알파벳: r.알파벳,
+      총매출: parseFloat(r.총매출),
+    })),
+    pieRateByCode: pieRateRows.rows.map((r) => ({
+      알파벳: r.알파벳,
+      총이익금액: parseFloat(r.총이익금액),
       건수: parseInt(r.건수),
     })),
   }

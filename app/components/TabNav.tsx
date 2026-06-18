@@ -5,6 +5,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 const TABS = [
   { label: '개요', path: '/' },
   { label: '데이터', path: '/data' },
+  { label: '보험코드', path: '/codes' },
 ] as const
 
 export default function TabNav() {
