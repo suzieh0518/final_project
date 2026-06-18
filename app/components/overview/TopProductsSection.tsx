@@ -14,6 +14,20 @@ type ProductByProfitRate = {
   총기준가: number
 }
 
+type ProductByTotalProfit = {
+  제품명: string
+  보험코드: string
+  건수: number
+  총이익금액: number
+  평균이익율: number
+}
+
+function formatProfit(value: number) {
+  if (value >= 1_0000_0000) return `${(value / 1_0000_0000).toFixed(1)}억`
+  if (value >= 1_0000) return `${(value / 1_0000).toFixed(0)}만`
+  return `₩${value.toLocaleString()}`
+}
+
 const RANK_COLORS = [
   'text-yellow-400',
   'text-slate-300',
@@ -49,11 +63,39 @@ function ProductName({ name }: { name: string }) {
 export default function TopProductsSection({
   byVolume,
   byProfitRate,
+  byTotalProfit,
 }: {
   byVolume: ProductByVolume[]
   byProfitRate: ProductByProfitRate[]
+  byTotalProfit: ProductByTotalProfit[]
 }) {
   return (
+    <div className="space-y-5">
+      <div className="bg-slate-900 rounded-2xl border border-slate-800 p-5">
+        <div className="mb-4">
+          <div className="flex items-center gap-2 mb-0.5">
+            <div className="w-1.5 h-4 rounded-full bg-violet-500" />
+            <h3 className="text-sm font-semibold text-slate-100">이익금액 Top 10 제품</h3>
+          </div>
+          <p className="text-xs text-slate-500 ml-3.5">실이익금액 합계 기준</p>
+        </div>
+        <div className="space-y-2.5">
+          {byTotalProfit.map((p, i) => (
+            <div key={p.보험코드 + i} className="flex items-center gap-2 py-1.5 px-2 rounded-lg hover:bg-slate-800/60 transition-colors">
+              <Rank n={i + 1} />
+              <InsuranceCode code={p.보험코드} />
+              <ProductName name={p.제품명} />
+              <div className="ml-auto shrink-0 text-right">
+                <p className="text-sm font-semibold text-violet-400">
+                  {formatProfit(p.총이익금액)}
+                </p>
+                <p className="text-xs text-slate-500">{p.건수}건 · {p.평균이익율}%</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
       <div className="bg-slate-900 rounded-2xl border border-slate-800 p-5">
         <div className="mb-4">
@@ -104,6 +146,7 @@ export default function TopProductsSection({
           ))}
         </div>
       </div>
+    </div>
     </div>
   )
 }

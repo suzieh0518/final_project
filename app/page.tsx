@@ -39,6 +39,7 @@ export default async function OverviewPage({
       <TopProductsSection
         byVolume={data.topByVolume}
         byProfitRate={data.topByProfitRate}
+        byTotalProfit={data.topByTotalProfit}
       />
     </>
   )
