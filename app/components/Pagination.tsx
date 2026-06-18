@@ -27,13 +27,13 @@ export default function Pagination({
       <button
         onClick={() => goTo(currentPage - 1)}
         disabled={currentPage <= 1 || isPending}
-        className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+        className="px-3 py-1.5 text-sm bg-slate-800 border border-slate-700 text-slate-300 rounded-lg hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
       >
         이전
       </button>
       {pages.map((p, i) =>
         p === '...' ? (
-          <span key={`ellipsis-${i}`} className="px-2 text-gray-400 text-sm">…</span>
+          <span key={`ellipsis-${i}`} className="px-2 text-slate-500 text-sm">…</span>
         ) : (
           <button
             key={p}
@@ -41,8 +41,8 @@ export default function Pagination({
             disabled={isPending}
             className={`px-3 py-1.5 text-sm border rounded-lg transition-colors ${
               p === currentPage
-                ? 'bg-blue-600 text-white border-blue-600'
-                : 'border-gray-300 hover:bg-gray-50'
+                ? 'bg-sky-600 text-white border-sky-600'
+                : 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700'
             }`}
           >
             {p}
@@ -52,7 +52,7 @@ export default function Pagination({
       <button
         onClick={() => goTo(currentPage + 1)}
         disabled={currentPage >= totalPages || isPending}
-        className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+        className="px-3 py-1.5 text-sm bg-slate-800 border border-slate-700 text-slate-300 rounded-lg hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
       >
         다음
       </button>

@@ -97,40 +97,50 @@ export async function getDistinct연도() {
   return result.rows.map((r: { 연도: number }) => r.연도)
 }
 
-export async function getOverviewData() {
+export async function getOverviewData(연도?: number) {
+  const p = 연도 ? [연도] : []
+  const y = (hasWhere: boolean) =>
+    연도 ? (hasWhere ? ` AND 연도 = $1` : ` WHERE 연도 = $1`) : ''
+
   const [customerRows, manufacturerRows, volumeRows, rateRows, statsRows, insuranceRows] = await Promise.all([
     pool.query<{ 매출처: string; 이익합계: string }>(
       `SELECT 매출처, SUM(실이익금액) as 이익합계
-       FROM sales_records WHERE 매출처 != ''
-       GROUP BY 매출처 ORDER BY 이익합계 DESC LIMIT 8`
+       FROM sales_records WHERE 매출처 != ''${y(true)}
+       GROUP BY 매출처 ORDER BY 이익합계 DESC LIMIT 8`,
+      p
     ),
     pool.query<{ 제조사: string; 이익합계: string }>(
       `SELECT 제조사, SUM(실이익금액) as 이익합계
-       FROM sales_records WHERE 제조사 != ''
-       GROUP BY 제조사 ORDER BY 이익합계 DESC LIMIT 10`
+       FROM sales_records WHERE 제조사 != ''${y(true)}
+       GROUP BY 제조사 ORDER BY 이익합계 DESC LIMIT 10`,
+      p
     ),
     pool.query<{ 제품명: string; 보험코드: string; 건수: string; 총기준가: string; 평균이익율: string }>(
       `SELECT 제품명, 보험코드, COUNT(*) as 건수,
               SUM(기준가) as 총기준가,
               ROUND(AVG(실이익율)::numeric, 2) as 평균이익율
-       FROM sales_records WHERE 보험코드 IS NOT NULL AND 보험코드 != ''
+       FROM sales_records WHERE 보험코드 IS NOT NULL AND 보험코드 != ''${y(true)}
        GROUP BY 제품명, 보험코드
-       ORDER BY 총기준가 DESC LIMIT 10`
+       ORDER BY 총기준가 DESC LIMIT 10`,
+      p
     ),
     pool.query<{ 제품명: string; 보험코드: string; 건수: string; 평균이익율: string; 총기준가: string }>(
       `SELECT 제품명, 보험코드, COUNT(*) as 건수,
               ROUND(AVG(실이익율)::numeric, 2) as 평균이익율,
               SUM(기준가) as 총기준가
-       FROM sales_records WHERE 보험코드 IS NOT NULL AND 보험코드 != ''
+       FROM sales_records WHERE 보험코드 IS NOT NULL AND 보험코드 != ''${y(true)}
        GROUP BY 제품명, 보험코드
        HAVING COUNT(*) >= 10
-       ORDER BY 평균이익율 DESC LIMIT 10`
+       ORDER BY 평균이익율 DESC LIMIT 10`,
+      p
     ),
-    pool.query<{ total_count: string; total_profit: string; avg_profit_rate: string }>(
+    pool.query<{ total_count: string; total_profit: string; avg_profit_rate: string; total_sales: string }>(
       `SELECT COUNT(*) as total_count,
               COALESCE(SUM(실이익금액), 0) as total_profit,
-              COALESCE(AVG(실이익율), 0) as avg_profit_rate
-       FROM sales_records`
+              COALESCE(AVG(실이익율), 0) as avg_profit_rate,
+              COALESCE(SUM(기준가), 0) as total_sales
+       FROM sales_records${y(false)}`,
+      p
     ),
     pool.query<{ 보험코드: string; 총매출: string; 총이익금액: string; 평균이익율: string; 건수: string }>(
       `SELECT 보험코드,
@@ -138,9 +148,10 @@ export async function getOverviewData() {
               SUM(실이익금액) as 총이익금액,
               ROUND(AVG(실이익율)::numeric, 2) as 평균이익율,
               COUNT(*) as 건수
-       FROM sales_records WHERE 보험코드 IS NOT NULL AND 보험코드 != ''
+       FROM sales_records WHERE 보험코드 IS NOT NULL AND 보험코드 != ''${y(true)}
        GROUP BY 보험코드
-       ORDER BY 총매출 DESC LIMIT 10`
+       ORDER BY 총매출 DESC LIMIT 10`,
+      p
     ),
   ])
 

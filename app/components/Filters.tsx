@@ -17,6 +17,8 @@ export default function Filters({
   const [search, setSearch] = useState(searchParams.get('search') ?? '')
   const [매입처Input, set매입처Input] = useState(searchParams.get('매입처') ?? '')
 
+  const inputCls = 'bg-slate-800 border border-slate-700 text-slate-200 placeholder-slate-500 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent'
+
   function apply(overrides: Record<string, string>) {
     const params = new URLSearchParams(searchParams.toString())
     const next = { search, 매입처: 매입처Input, ...overrides }
@@ -44,7 +46,7 @@ export default function Filters({
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         onKeyDown={(e) => e.key === 'Enter' && apply({ search })}
-        className="border border-gray-300 rounded-lg px-3 py-2 text-sm w-56 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className={`${inputCls} w-56`}
       />
       <input
         type="text"
@@ -52,12 +54,12 @@ export default function Filters({
         value={매입처Input}
         onChange={(e) => set매입처Input(e.target.value)}
         onKeyDown={(e) => e.key === 'Enter' && apply({ 매입처: 매입처Input })}
-        className="border border-gray-300 rounded-lg px-3 py-2 text-sm w-44 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className={`${inputCls} w-44`}
       />
       <select
         value={searchParams.get('연도') ?? ''}
         onChange={(e) => apply({ 연도: e.target.value })}
-        className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className={inputCls}
       >
         <option value="">전체 연도</option>
         {연도List.map((y) => (
@@ -67,7 +69,7 @@ export default function Filters({
       <select
         value={searchParams.get('매출처') ?? ''}
         onChange={(e) => apply({ 매출처: e.target.value })}
-        className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className={inputCls}
       >
         <option value="">전체 매출처</option>
         {매출처List.map((v) => (
@@ -77,18 +79,18 @@ export default function Filters({
       <button
         onClick={() => apply({})}
         disabled={isPending}
-        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium disabled:opacity-50 transition-colors"
+        className="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-sm font-medium disabled:opacity-50 transition-colors"
       >
         검색
       </button>
       <button
         onClick={reset}
         disabled={isPending}
-        className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium disabled:opacity-50 transition-colors"
+        className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg text-sm font-medium disabled:opacity-50 transition-colors"
       >
         초기화
       </button>
-      {isPending && <span className="text-xs text-gray-400">로딩 중...</span>}
+      {isPending && <span className="text-xs text-slate-500">로딩 중...</span>}
     </div>
   )
 }
