@@ -1,6 +1,6 @@
 {
-  "name": "매출 대시보드",
-  "short_name": "매출 대시보드",
+  "name": "BNS 매출 대시보드",
+  "short_name": "BNS 대시보드",
   "description": "의료기기 매출 데이터 대시보드",
   "start_url": "/",
   "display": "standalone",
