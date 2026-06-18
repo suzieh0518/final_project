@@ -15,13 +15,17 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "매출 대시보드",
-  description: "의료기기 매출 데이터 대시보드",
+  title: "BNS 매출 대시보드",
+  description: "Sales Analytics",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "매출 대시보드",
+    title: "BNS 매출 대시보드",
+  },
+  openGraph: {
+    title: "BNS 매출 대시보드",
+    description: "Sales Analytics",
   },
 };
 
@@ -51,7 +55,7 @@ export default function RootLayout({
               </svg>
             </div>
             <div>
-              <h1 className="text-base font-bold text-white">매출 대시보드</h1>
+              <h1 className="text-base font-bold text-white">BNS 매출 대시보드</h1>
               <p className="text-xs text-slate-500">Sales Analytics</p>
             </div>
           </div>
