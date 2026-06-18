@@ -78,11 +78,13 @@ export async function getSummaryStats(filters: Filters = {}) {
     total_count: string
     total_profit: string
     avg_profit_rate: string
+    total_sales: string
   }>(
     `SELECT
       COUNT(*) as total_count,
       COALESCE(SUM(실이익금액), 0) as total_profit,
-      COALESCE(AVG(실이익율), 0) as avg_profit_rate
+      COALESCE(AVG(실이익율), 0) as avg_profit_rate,
+      COALESCE(SUM(실매출금액), 0) as total_sales
     FROM sales_records ${where}`,
     values
   )
@@ -134,7 +136,7 @@ export async function getOverviewData(연도?: number) {
   const y = (hasWhere: boolean) =>
     연도 ? (hasWhere ? ` AND 연도 = $1` : ` WHERE 연도 = $1`) : ''
 
-  const [customerRows, manufacturerRows, volumeRows, rateRows, statsRows, profitRows, insuranceRows, pieSalesRows, pieRateRows] = await Promise.all([
+  const [customerRows, manufacturerRows, volumeRows, rateRows, statsRows, profitRows, highSalesRateRows, insuranceRows, pieSalesRows, pieRateRows] = await Promise.all([
     pool.query<{ 매출처: string; 이익합계: string }>(
       `SELECT 매출처, SUM(실이익금액) as 이익합계
        FROM sales_records WHERE 매출처 != ''${y(true)}
@@ -158,7 +160,7 @@ export async function getOverviewData(연도?: number) {
     ),
     pool.query<{ 제품명: string; 보험코드: string; 건수: string; 평균이익율: string; 총기준가: string; 총매출: string }>(
       `SELECT 제품명, 보험코드, COUNT(*) as 건수,
-              ROUND(AVG(실이익율)::numeric, 2) as 평균이익율,
+              ROUND((SUM(실이익금액) / NULLIF(SUM(실매출금액), 0) * 100)::numeric, 2) as 평균이익율,
               SUM(기준가) as 총기준가,
               SUM(실매출금액) as 총매출
        FROM sales_records WHERE 보험코드 IS NOT NULL AND 보험코드 != ''${y(true)}
@@ -178,11 +180,22 @@ export async function getOverviewData(연도?: number) {
     pool.query<{ 제품명: string; 보험코드: string; 건수: string; 총이익금액: string; 평균이익율: string; 총매출: string }>(
       `SELECT 제품명, 보험코드, COUNT(*) as 건수,
               SUM(실이익금액) as 총이익금액,
-              ROUND(AVG(실이익율)::numeric, 2) as 평균이익율,
+              ROUND((SUM(실이익금액) / NULLIF(SUM(실매출금액), 0) * 100)::numeric, 2) as 평균이익율,
               SUM(실매출금액) as 총매출
        FROM sales_records WHERE 보험코드 IS NOT NULL AND 보험코드 != ''${y(true)}
        GROUP BY 제품명, 보험코드
        ORDER BY 총이익금액 DESC LIMIT 10`,
+      p
+    ),
+    pool.query<{ 제품명: string; 보험코드: string; 건수: string; 총매출: string; 총이익금액: string; 이익율: string }>(
+      `SELECT 제품명, 보험코드, COUNT(*) as 건수,
+              SUM(실매출금액) as 총매출,
+              SUM(실이익금액) as 총이익금액,
+              ROUND((SUM(실이익금액) / NULLIF(SUM(실매출금액), 0) * 100)::numeric, 2) as 이익율
+       FROM sales_records WHERE 보험코드 IS NOT NULL AND 보험코드 != ''${y(true)}
+       GROUP BY 제품명, 보험코드
+       HAVING SUM(실매출금액) >= 50000000
+       ORDER BY 이익율 DESC LIMIT 10`,
       p
     ),
     pool.query<{ 보험코드: string; 총매출: string; 총이익금액: string; 평균이익율: string; 건수: string }>(
@@ -238,6 +251,14 @@ export async function getOverviewData(연도?: number) {
       총이익금액: parseFloat(r.총이익금액),
       평균이익율: parseFloat(r.평균이익율),
       총매출: parseFloat(r.총매출),
+    })),
+    highSalesProfitRate: highSalesRateRows.rows.map((r) => ({
+      제품명: r.제품명,
+      보험코드: r.보험코드,
+      건수: parseInt(r.건수),
+      총매출: parseFloat(r.총매출),
+      총이익금액: parseFloat(r.총이익금액),
+      이익율: parseFloat(r.이익율),
     })),
     insuranceCodeTop10: insuranceRows.rows.map((r) => ({
       보험코드: r.보험코드,

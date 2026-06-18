@@ -5,6 +5,7 @@ import ManufacturerProfitChart from './components/overview/ManufacturerProfitCha
 import InsuranceCodeChart from './components/overview/InsuranceCodeChart'
 import TopProductsSection from './components/overview/TopProductsSection'
 import InsurancePieCharts from './components/overview/InsurancePieCharts'
+import HighSalesProfitRateSection from './components/overview/HighSalesProfitRateSection'
 import YearlyTrendChart from './components/overview/YearlyTrendChart'
 import YearSelector from './components/YearSelector'
 
@@ -39,6 +40,7 @@ export default async function OverviewPage({
         <CustomerProfitChart data={data.customerProfit} />
         <ManufacturerProfitChart data={data.manufacturerProfit} />
       </div>
+      <HighSalesProfitRateSection data={data.highSalesProfitRate} />
       <InsuranceCodeChart data={data.insuranceCodeTop10} />
       <InsurancePieCharts salesData={data.pieSalesByCode} rateData={data.pieRateByCode} />
       <TopProductsSection
