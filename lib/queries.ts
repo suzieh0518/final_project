@@ -198,12 +198,13 @@ export async function getOverviewData(연도?: number) {
        ORDER BY 이익율 DESC LIMIT 10`,
       p
     ),
-    pool.query<{ 보험코드: string; 총매출: string; 총이익금액: string; 평균이익율: string; 건수: string }>(
+    pool.query<{ 보험코드: string; 총매출: string; 총이익금액: string; 평균이익율: string; 건수: string; 대표제품명: string }>(
       `SELECT 보험코드,
               SUM(실매출금액) as 총매출,
               SUM(실이익금액) as 총이익금액,
               ROUND(AVG(실이익율)::numeric, 2) as 평균이익율,
-              COUNT(*) as 건수
+              COUNT(*) as 건수,
+              MIN(제품명) as 대표제품명
        FROM sales_records WHERE 보험코드 IS NOT NULL AND 보험코드 != ''${y(true)}
        GROUP BY 보험코드
        ORDER BY 총매출 DESC LIMIT 10`,
@@ -266,6 +267,7 @@ export async function getOverviewData(연도?: number) {
       총이익금액: parseFloat(r.총이익금액),
       평균이익율: parseFloat(r.평균이익율),
       건수: parseInt(r.건수),
+      대표제품명: r.대표제품명,
     })),
     pieSalesByCode: pieSalesRows.rows.map((r) => ({
       알파벳: r.알파벳,

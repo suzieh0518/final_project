@@ -11,6 +11,7 @@ type DataItem = {
   총이익금액: number
   평균이익율: number
   건수: number
+  대표제품명: string
 }
 
 type Props = { data: DataItem[] }
@@ -32,21 +33,43 @@ function CustomTooltip({ active, payload, label }: {
   const item = payload[0]?.payload
   return (
     <div className="bg-slate-800 border border-slate-700 rounded-xl p-3 text-xs shadow-xl">
-      <p className="font-semibold text-slate-100 mb-2">{label}</p>
+      <p className="font-semibold text-slate-100">{label}</p>
+      {item && <p className="text-slate-400 mb-2">{item.대표제품명}</p>}
       {payload.map((p) => (
         <p key={p.name} style={{ color: p.color }} className="mb-0.5">
           {p.name}: ₩{p.value.toLocaleString('ko-KR')}
         </p>
       ))}
       {item && (
-        <>
-          <div className="border-t border-slate-700 mt-2 pt-2">
-            <p className="text-slate-400">평균 이익율: <span className="text-emerald-400 font-semibold">{item.평균이익율}%</span></p>
-            <p className="text-slate-400">거래건수: <span className="text-slate-200">{item.건수}건</span></p>
-          </div>
-        </>
+        <div className="border-t border-slate-700 mt-2 pt-2">
+          <p className="text-slate-400">평균 이익율: <span className="text-emerald-400 font-semibold">{item.평균이익율}%</span></p>
+          <p className="text-slate-400">거래건수: <span className="text-slate-200">{item.건수}건</span></p>
+        </div>
       )}
     </div>
+  )
+}
+
+function CustomYAxisTick({ x, y, payload, data }: {
+  x?: number | string; y?: number | string;
+  payload?: { value: string }
+  data: DataItem[]
+}) {
+  if (x == null || y == null || !payload) return null
+  const nx = Number(x), ny = Number(y)
+  const item = data.find(d => d.보험코드 === payload.value)
+  const name = item?.대표제품명?.replace(/\s+[A-Z]\d{7,}.*$/, '').trim() ?? ''
+  const truncated = name.length > 10 ? name.slice(0, 10) + '…' : name
+
+  return (
+    <g transform={`translate(${nx},${ny})`}>
+      <text x={0} y={-4} textAnchor="end" fill="#94a3b8" fontSize={11} fontFamily="monospace">
+        {payload.value}
+      </text>
+      <text x={0} y={10} textAnchor="end" fill="#64748b" fontSize={10}>
+        {truncated}
+      </text>
+    </g>
   )
 }
 
@@ -57,7 +80,7 @@ export default function InsuranceCodeChart({ data }: Props) {
         <h3 className="text-sm font-semibold text-slate-100">보험코드별 매출 및 이익금액 Top 10</h3>
         <p className="text-xs text-slate-500 mt-0.5">매출 = 실매출금액 합계 기준</p>
       </div>
-      <ResponsiveContainer width="100%" height={320}>
+      <ResponsiveContainer width="100%" height={360}>
         <BarChart data={data} layout="vertical" margin={{ left: 10, right: 24, top: 0, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#1e293b" />
           <XAxis
@@ -70,15 +93,13 @@ export default function InsuranceCodeChart({ data }: Props) {
           <YAxis
             type="category"
             dataKey="보험코드"
-            tick={{ fontSize: 11, fill: '#94a3b8' }}
-            width={80}
+            tick={(props) => <CustomYAxisTick {...props} data={data} />}
+            width={110}
             axisLine={false}
             tickLine={false}
           />
           <Tooltip content={<CustomTooltip />} />
-          <Legend
-            wrapperStyle={{ fontSize: 12, color: '#94a3b8' }}
-          />
+          <Legend wrapperStyle={{ fontSize: 12, color: '#94a3b8' }} />
           <Bar dataKey="총매출" name="매출(실매출금액)" fill="#38bdf8" radius={[0, 4, 4, 0]} />
           <Bar dataKey="총이익금액" name="이익금액" fill="#34d399" radius={[0, 4, 4, 0]} />
         </BarChart>
