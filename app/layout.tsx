@@ -52,7 +52,7 @@ export default function RootLayout({
             </div>
             <div>
               <h1 className="text-base font-bold text-white">매출 대시보드</h1>
-              <p className="text-xs text-slate-500">Medical Device Sales Analytics</p>
+              <p className="text-xs text-slate-500">Sales Analytics</p>
             </div>
           </div>
           <Suspense fallback={<div className="w-32 h-8 bg-slate-800 rounded-xl animate-pulse" />}>

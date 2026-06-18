@@ -113,7 +113,7 @@ export default function TopProductsSection({
               <ProductName name={p.제품명} />
               <div className="ml-auto shrink-0 text-right">
                 <p className="text-sm font-semibold text-sky-400">
-                  ₩{(p.총기준가 / 1_000_000).toFixed(0)}M
+                  {(p.총기준가 / 1_0000_0000).toFixed(2)}억
                 </p>
                 <p className="text-xs text-slate-500">{p.건수}건 · {p.평균이익율}%</p>
               </div>
