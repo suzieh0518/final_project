@@ -12,6 +12,7 @@ type ProductByProfitRate = {
   건수: number
   평균이익율: number
   총기준가: number
+  총매출: number
 }
 
 type ProductByTotalProfit = {
@@ -20,6 +21,7 @@ type ProductByTotalProfit = {
   건수: number
   총이익금액: number
   평균이익율: number
+  총매출: number
 }
 
 function formatProfit(value: number) {
@@ -89,7 +91,7 @@ export default function TopProductsSection({
                 <p className="text-sm font-semibold text-violet-400">
                   {formatProfit(p.총이익금액)}
                 </p>
-                <p className="text-xs text-slate-500">{p.건수}건 · {p.평균이익율}%</p>
+                <p className="text-xs text-slate-500">{p.건수}건 · {p.평균이익율}% · {formatProfit(p.총매출)}</p>
               </div>
             </div>
           ))}
@@ -140,7 +142,7 @@ export default function TopProductsSection({
                 <p className="text-sm font-semibold text-emerald-400">
                   {p.평균이익율}%
                 </p>
-                <p className="text-xs text-slate-500">{p.건수}건</p>
+                <p className="text-xs text-slate-500">{p.건수}건 · {formatProfit(p.총매출)}</p>
               </div>
             </div>
           ))}
