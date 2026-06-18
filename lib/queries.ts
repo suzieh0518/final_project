@@ -138,7 +138,7 @@ export async function getOverviewData(연도?: number) {
       `SELECT COUNT(*) as total_count,
               COALESCE(SUM(실이익금액), 0) as total_profit,
               COALESCE(AVG(실이익율), 0) as avg_profit_rate,
-              COALESCE(SUM(기준가), 0) as total_sales
+              COALESCE(SUM(실매출금액), 0) as total_sales
        FROM sales_records${y(false)}`,
       p
     ),

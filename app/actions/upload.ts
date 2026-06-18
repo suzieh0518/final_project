@@ -30,16 +30,17 @@ export async function uploadSalesData(
     if (dataRows.length === 0) return { error: '유효한 데이터가 없습니다.' }
 
     const col = {
-      매입처:   dataRows.map((r) => String(r[1] ?? '')),
-      제조사:   dataRows.map((r) => String(r[2] ?? '')),
-      매출처:   dataRows.map((r) => String(r[3] ?? '')),
-      제품명:   dataRows.map((r) => String(r[5] ?? '')),
-      보험코드: dataRows.map((r) => String(r[7] ?? '')),
-      기준가:   dataRows.map((r) => Number(r[8]  ?? 0)),
+      매입처:     dataRows.map((r) => String(r[1] ?? '')),
+      제조사:     dataRows.map((r) => String(r[2] ?? '')),
+      매출처:     dataRows.map((r) => String(r[3] ?? '')),
+      제품명:     dataRows.map((r) => String(r[5] ?? '')),
+      보험코드:   dataRows.map((r) => String(r[7] ?? '')),
+      기준가:     dataRows.map((r) => Number(r[8]  ?? 0)),
       실매입단가: dataRows.map((r) => Number(r[14] ?? 0)),
+      실매출금액: dataRows.map((r) => Number(r[13] ?? 0)),
       실이익금액: dataRows.map((r) => Number(r[16] ?? 0)),
       실이익율:   dataRows.map((r) => Number(r[17] ?? 0)),
-      연도:     dataRows.map(() => 연도),
+      연도:       dataRows.map(() => 연도),
     }
 
     const BATCH = 5000
@@ -50,14 +51,14 @@ export async function uploadSalesData(
         const s = (arr: unknown[]) => arr.slice(i, i + BATCH)
         await client.query(
           `INSERT INTO sales_records
-             (매입처, 제조사, 매출처, 제품명, 보험코드, 기준가, 실매입단가, 실이익금액, 실이익율, 연도)
+             (매입처, 제조사, 매출처, 제품명, 보험코드, 기준가, 실매입단가, 실매출금액, 실이익금액, 실이익율, 연도)
            SELECT unnest($1::text[]), unnest($2::text[]), unnest($3::text[]), unnest($4::text[]),
                   unnest($5::text[]), unnest($6::numeric[]), unnest($7::numeric[]),
-                  unnest($8::numeric[]), unnest($9::numeric[]), unnest($10::int[])`,
+                  unnest($8::numeric[]), unnest($9::numeric[]), unnest($10::numeric[]), unnest($11::int[])`,
           [
             s(col.매입처), s(col.제조사), s(col.매출처), s(col.제품명),
             s(col.보험코드), s(col.기준가), s(col.실매입단가),
-            s(col.실이익금액), s(col.실이익율), s(col.연도),
+            s(col.실매출금액), s(col.실이익금액), s(col.실이익율), s(col.연도),
           ]
         )
       }
