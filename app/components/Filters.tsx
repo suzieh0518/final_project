@@ -16,12 +16,14 @@ export default function Filters({
 
   const [search, setSearch] = useState(searchParams.get('search') ?? '')
   const [매입처Input, set매입처Input] = useState(searchParams.get('매입처') ?? '')
+  const currentPrefix = searchParams.get('보험코드prefix') ?? ''
+  const ALPHABET = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P']
 
   const inputCls = 'bg-slate-800 border border-slate-700 text-slate-200 placeholder-slate-500 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent'
 
   function apply(overrides: Record<string, string>) {
     const params = new URLSearchParams(searchParams.toString())
-    const next = { search, 매입처: 매입처Input, ...overrides }
+    const next = { search, 매입처: 매입처Input, 보험코드prefix: currentPrefix, ...overrides }
 
     Object.entries(next).forEach(([k, v]) => {
       if (v) params.set(k, v)
@@ -39,6 +41,31 @@ export default function Filters({
   }
 
   return (
+    <div className="space-y-3">
+      <div className="flex flex-wrap gap-1 items-center">
+        <span className="text-xs text-slate-500 mr-1">보험코드</span>
+        {ALPHABET.map((letter) => (
+          <button
+            key={letter}
+            onClick={() => apply({ 보험코드prefix: currentPrefix === letter ? '' : letter })}
+            className={`w-7 h-7 rounded text-xs font-bold transition-colors ${
+              currentPrefix === letter
+                ? 'bg-sky-500 text-white'
+                : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200'
+            }`}
+          >
+            {letter}
+          </button>
+        ))}
+        {currentPrefix && (
+          <button
+            onClick={() => apply({ 보험코드prefix: '' })}
+            className="text-xs text-slate-500 hover:text-slate-300 ml-1 underline"
+          >
+            전체
+          </button>
+        )}
+      </div>
     <div className="flex flex-wrap gap-2 items-center">
       <input
         type="text"
@@ -91,6 +118,7 @@ export default function Filters({
         초기화
       </button>
       {isPending && <span className="text-xs text-slate-500">로딩 중...</span>}
+    </div>
     </div>
   )
 }

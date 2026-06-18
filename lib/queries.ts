@@ -9,10 +9,11 @@ type Filters = {
   매출처?: string
   연도?: number
   page?: number
+  보험코드prefix?: string
 }
 
 function buildWhere(filters: Filters) {
-  const { search, 매입처, 매출처, 연도 } = filters
+  const { search, 매입처, 매출처, 연도, 보험코드prefix } = filters
   const conditions: string[] = []
   const values: unknown[] = []
   let idx = 1
@@ -35,6 +36,11 @@ function buildWhere(filters: Filters) {
   if (연도) {
     conditions.push(`연도 = $${idx}`)
     values.push(연도)
+    idx++
+  }
+  if (보험코드prefix) {
+    conditions.push(`보험코드 ILIKE $${idx}`)
+    values.push(`${보험코드prefix}%`)
     idx++
   }
 

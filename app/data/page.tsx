@@ -24,6 +24,7 @@ export default async function DataPage({
     매출처: params.매출처,
     연도: params.연도 ? parseInt(params.연도) : undefined,
     page: params.page ? parseInt(params.page) : 1,
+    보험코드prefix: params.보험코드prefix,
   }
 
   const [{ records, total, totalPages, currentPage }, stats, 매출처List, 연도List] =
